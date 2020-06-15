@@ -121,6 +121,7 @@ class Aggregate
         let volume = prices.reduce( (a,b) => a.size + b.size, 0 );
 
         console.log( 'OHLCV', open, high, low, close, volume );
+        
 
     }
 
