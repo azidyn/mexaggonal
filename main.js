@@ -5,10 +5,14 @@ const config            = require('./config');
 
 const wsc = new WebSocketClient();
 
-// Assumes one hour integer divisible and 00 seconds aligned
-const aggregate = new Aggregate({ resolution: 1 * 1000 * 60 });
+const ONE_MINUTE    = 1 * 1000 * 60;
+const FIVE_MINUTES  = 5 * 1000 * 60;
 
-wsc.open( config.BITMEX_WSS_TESTNET ); // see config.js for live bitmex const
+// Assumes one hour integer divisible and 00 seconds aligned
+const aggregate = new Aggregate({ resolution: ONE_MINUTE });
+
+// see config.js for live bitmex const
+wsc.open( config.BITMEX_WSS_TESTNET );
 
 wsc.onopen = ( e ) => { 
     console.log( "BitMEX connected. Streaming data..." );
@@ -33,6 +37,8 @@ wsc.onmessage = async ( data, flags, number ) => {
     }
 
 }
+
+// Emitted output from aggregation...
 
 aggregate.on( 'initialized', () => console.log('Partial bar completed, waiting for next full bar...') );
 
