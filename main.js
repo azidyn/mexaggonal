@@ -25,9 +25,9 @@ wsc.onmessage = async ( data, flags, number ) => {
 
     for ( let d of frame.data )
     {
-        if ( !d.price || !d.timestamp ) continue;
+        if ( !d.price || !d.timestamp || !d.size ) continue;
 
-        aggregate.add( d.timestamp, d.price );
+        aggregate.add( d.timestamp, d.price, d.size );
 
     }
 
