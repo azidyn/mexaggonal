@@ -6,7 +6,6 @@ class Aggregate
     constructor( opts )
     {
         this.resolution = opts.resolution;
-        this.unique = opts.unique || false;
         this.data = [];
         this.latencies = [], this._avglatency = 0;
         this.timer = null;
@@ -18,16 +17,6 @@ class Aggregate
     add( time, price, size )
     {
         let timestamp = Date.parse( time );
-
-        // if ( this.unique && this.data.length ) {
-            
-        //     if ( price != this._last() )
-        //         this.data.push({ timestamp, price, size });
-        //     else
-        //         this.data[ this.data.length - 1] = { timestamp, price, size }; // overwrite previous duplicate price (so we have a fresh timestamp on it)
-
-        // } else {
-        // }
 
         this.data.push({ timestamp, price, size });
             
@@ -41,6 +30,7 @@ class Aggregate
     _average_latency( latency ) {
         
         // Ignore huge latency, bitmex pushes old timestamps on initialisation
+        
         if ( latency > 1000 ) return 0;
 
         this.latencies.push( latency );
@@ -72,7 +62,7 @@ class Aggregate
         // What is the actual open time of this proposed new bar
         let mark = l.timestamp - offset;
 
-        console.log( (new Date(l.timestamp)).toISOString(),  (new Date(mark)).toISOString(), l.price, `latency: ${averagelatency}ms`);
+        console.log( (new Date(l.timestamp)).toISOString(),  (new Date(mark)).toISOString(), l.price, l.size, `latency: ${averagelatency}ms`);
 
         // Disable the previous timer, we've got a new timestamp to offset from
         if ( this.timer )
@@ -94,6 +84,7 @@ class Aggregate
             return;
         }
 
+        // Exact :00.000 miliseconds start of next bar
         let nextopentime = opentime + this.resolution;
 
         // Get all price changes occuring within this bar's time period
@@ -103,7 +94,6 @@ class Aggregate
         let firstindex = this.data.findIndex( d => d.timestamp >= opentime );
 
         let i = firstindex;
-
                                                                 
         if ( this.data[ i ].timestamp != opentime && i > 0 )    // If the first price doesn't match the open time *exactly* 
             i--;                                                // (most cases!) then use the previous price if available...
@@ -118,10 +108,10 @@ class Aggregate
         let high = Math.max( ...prices );
         let low = Math.min( ...prices );
         let close = changes[ changes.length - 1 ].price;        // last price received before exact start of next bar
-        let volume = prices.reduce( (a,b) => a.size + b.size, 0 );
+        let volume = changes.reduce( (a,b) => a + b.size, 0 );
 
         console.log( 'OHLCV', open, high, low, close, volume );
-        
+
 
     }
 
