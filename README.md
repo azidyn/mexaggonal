@@ -12,6 +12,9 @@ npm install
 node main
 ```
 
+### Why?
+
+There is considerable latency (19 seconds!) on BitMEX's `tradeBin1m` etc. endpoints.
 
 ### Example output
 ```js
