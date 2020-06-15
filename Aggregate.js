@@ -10,6 +10,8 @@ class Aggregate
         this.data = [];
         this.latencies = [], this._avglatency = 0;
         this.timer = null;
+
+        this.initialized = false;
     }
 
 
@@ -84,6 +86,40 @@ class Aggregate
 
     _aggregate( opentime ) {
 
+        // Ignore first bar
+        if ( !this.initialized ) {
+            this.initialized = true;
+            console.log('waiting for next bar');
+            return;
+        }
+
+        let nextopentime = opentime + this.resolution;
+
+        // Get all price changes for this bar
+        let changes = this.data.filter( d => d.timestamp >= opentime && d.timestamp < nextopentime );
+
+        // Get the first price nearest the open time
+        let firstindex = this.data.findIndex( d => d.timestamp >= opentime );
+
+        let i = firstindex;
+
+        if ( this.data[ i ].timestamp != opentime && i > 0 )
+            i--;
+        else
+            return;
+
+        let prices = changes.map( c => c.price );
+        let open = this.data[ i ].price;
+        let high = Math.max( ...prices );
+        let low = Math.min( ...prices );
+        let close = changes[ changes.length - 1 ].price;
+
+        console.log( 'OHLC', open, high, low, close );
+
+    }
+
+    _aggregate2( opentime ) {
+
         console.log('times up! this bar just closed:', (new Date(opentime)).toISOString() );
 
         let timestampnext = opentime + this.resolution;
@@ -118,7 +154,6 @@ class Aggregate
                 // If any exist, this will be 99.9% of cases
                 if ( nextbar[0].timestamp > timestampnext )
                 {
-
                     nextbar.unshift({ 
                         timestamp: timestampnext,
                         price: bar[ bar.length-1 ].price           // last price of the previous bar == open of next bar    
@@ -128,11 +163,11 @@ class Aggregate
             
             }
 
-            // Merge the corrected arrays
-            this.data = bar.concat( nextbar );
+            
+            this.data = nextbar;
 
-            console.log('---------------this.data.....');
-            console.log( this.data );
+            console.log( `merging current and next bar data, next = `);
+            console.log( nextbar );
 
             return;
         };
@@ -146,7 +181,12 @@ class Aggregate
         let low = Math.min( ...prices);
         let close = prices[ prices.length - 1 ];
 
-        console.log( open, high, low, close );
+        // Remove previous bar
+        this.data = this.data.filter( d => d.timestamp >= opentime && d.timestamp < timestampnext );
+
+    }
+
+    _ensure_next_open( data, opentime ) {
 
     }
 
