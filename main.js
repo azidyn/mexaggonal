@@ -8,7 +8,7 @@ const wsc = new WebSocketClient();
 // Assumes one hour integer divisible and 00 seconds aligned
 const aggregate = new Aggregate({ resolution: 1 * 1000 * 60 });
 
-wsc.open( config.BITMEX_WSS );
+wsc.open( config.BITMEX_WSS_TESTNET ); // see config.js for live bitmex const
 
 wsc.onopen = ( e ) => { 
     console.log( "BitMEX connected. Streaming data..." );
